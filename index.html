@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>7th Grade English Duel</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; background: white; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        /* GİRİŞ EKRANI */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 200;
+            padding: 20px; text-align: center;
+        }
+        #start-screen img { width: 150px; height: auto; margin-bottom: 20px; }
+        
+        .color-pickers-container { display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .picker-group { background: #fdfdfd; padding: 15px; border-radius: 20px; border: 2px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .picker-group p { margin: 0 0 12px 0; font-weight: bold; color: #444; font-size: 0.9rem; letter-spacing: 1px; }
+        .colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        
+        .color-dot {
+            width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            border: 3px solid transparent; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+        }
+        .color-dot:hover { transform: scale(1.1); }
+        .color-dot.active { border-color: #2c3e50; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        #play-button {
+            padding: 18px 80px; font-size: 1.8rem; font-weight: 900;
+            background: #27ae60; color: white; border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3); transition: 0.3s;
+        }
+        #play-button:active { transform: scale(0.95); }
+
+        /* OYUN ALANI */
+        #game-container { display: none; width: 100%; height: 100%; }
+        .player-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; box-sizing: border-box; }
+        
+        #p1-area { border-right: 2px solid #fff; }
+        .p1-content { transform: rotate(90deg); width: 80vh; text-align: center; }
+        .p2-content { transform: rotate(-90deg); width: 80vh; text-align: center; }
+
+        .question { font-size: 1.15rem; line-height: 1.4; margin-bottom: 25px; font-weight: bold; min-height: 140px; display: flex; align-items: center; justify-content: center; color: white; white-space: pre-line; text-shadow: 1px 2px 4px rgba(0,0,0,0.3); }
+        .q-counter { font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; color: white; background: rgba(0,0,0,0.25); padding: 4px 15px; border-radius: 15px; }
+        .score { position: absolute; bottom: 30px; font-size: 1.6rem; font-weight: 900; background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 25px; color: white; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .btn-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; }
+        .answer-btn { padding: 20px; font-size: 1.05rem; border: none; border-radius: 15px; background: white; color: #2c3e50; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 5px 0 #bdc3c7; transition: 0.1s; }
+        .answer-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #bdc3c7; }
+
+        .waiting-msg { font-size: 2rem; font-weight: 900; display: none; color: #f1c40f; text-shadow: 2px 3px 6px rgba(0,0,0,0.4); }
+        .content-box.is-waiting .question, .content-box.is-waiting .btn-container, .content-box.is-waiting .q-counter { display: none; }
+        .content-box.is-waiting .waiting-msg { display: block; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: white; }
+    </style>
+</head>
+<body>
+
+<div id="start-screen">
+    <img src="images.jpg" alt="KHAL Logo">
+    
+    <div class="color-pickers-container">
+        <div class="picker-group">
+            <p>SOL TAKIM RENK</p>
+            <div class="colors" id="p1-colors">
+                <div class="color-dot active" style="background:#e74c3c" onclick="selectColor(1, '#e74c3c', this)"></div>
+                <div class="color-dot" style="background:#e67e22" onclick="selectColor(1, '#e67e22', this)"></div>
+                <div class="color-dot" style="background:#f1c40f" onclick="selectColor(1, '#f1c40f', this)"></div>
+                <div class="color-dot" style="background:#2ecc71" onclick="selectColor(1, '#2ecc71', this)"></div>
+                <div class="color-dot" style="background:#3498db" onclick="selectColor(1, '#3498db', this)"></div>
+                <div class="color-dot" style="background:#1abc9c" onclick="selectColor(1, '#1abc9c', this)"></div> <div class="color-dot" style="background:#fd79a8" onclick="selectColor(1, '#fd79a8', this)"></div>
+                <div class="color-dot" style="background:#8e44ad" onclick="selectColor(1, '#8e44ad', this)"></div>
+            </div>
+        </div>
+
+        <div class="picker-group">
+            <p>SAĞ TAKIM RENK</p>
+            <div class="colors" id="p2-colors">
+                <div class="color-dot" style="background:#e74c3c" onclick="selectColor(2, '#e74c3c', this)"></div>
+                <div class="color-dot" style="background:#e67e22" onclick="selectColor(2, '#e67e22', this)"></div>
+                <div class="color-dot" style="background:#f1c40f" onclick="selectColor(2, '#f1c40f', this)"></div>
+                <div class="color-dot" style="background:#2ecc71" onclick="selectColor(2, '#2ecc71', this)"></div>
+                <div class="color-dot active" style="background:#3498db" onclick="selectColor(2, '#3498db', this)"></div>
+                <div class="color-dot" style="background:#1abc9c" onclick="selectColor(2, '#1abc9c', this)"></div> <div class="color-dot" style="background:#fd79a8" onclick="selectColor(2, '#fd79a8', this)"></div>
+                <div class="color-dot" style="background:#8e44ad" onclick="selectColor(2, '#8e44ad', this)"></div>
+            </div>
+        </div>
+    </div>
+
+    <button id="play-button" onclick="startGame()">OYNA</button>
+</div>
+
+<div id="game-container">
+    <div id="overlay">
+        <h1 id="winner-text" style="font-size: 3rem; text-align: center; margin-bottom: 30px;">OYUN BİTTİ</h1>
+        <button onclick="location.reload()" style="padding: 20px 60px; background: #27ae60; color: white; border: none; border-radius: 50px; font-size: 1.5rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">YENİDEN BAŞLA</button>
+    </div>
+
+    <div class="player-area" id="p1-area">
+        <div id="p1-content-box" class="content-box">
+            <div class="q-counter" id="p1-count">Soru: 0/10</div>
+            <div class="question" id="p1-q">...</div>
+            <div class="btn-container">
+                <button class="answer-btn" id="p1-btn0" onclick="handleAnswer(1, 0)">...</button>
+                <button class="answer-btn" id="p1-btn1" onclick="handleAnswer(1, 1)">...</button>
+            </div>
+            <div id="p1-wait" class="waiting-msg">DİĞERİ BEKLENİYOR... ⏳</div>
+        </div>
+        <div class="score">P1: <span id="p1-score-val">0</span></div>
+    </div>
+
+    <div class="player-area" id="p2-area">
+       <div id="p2-content-box" class="content-box">
+            <div class="q-counter" id="p2-count">Soru: 0/10</div>
+            <div class="question" id="p2-q">...</div>
+            <div class="btn-container">
+                <button class="answer-btn" id="p2-btn0" onclick="handleAnswer(2, 0)">...</button>
+                <button class="answer-btn" id="p2-btn1" onclick="handleAnswer(2, 1)">...</button>
+            </div>
+            <div id="p2-wait" class="waiting-msg">DİĞERİ BEKLENİYOR... ⏳</div>
+        </div>
+        <div class="score">P2: <span id="p2-score-val">0</span></div>
+    </div>
+</div>
+
+<script>
+    let p1SelectedColor = "#e74c3c";
+    let p2SelectedColor = "#3498db";
+
+    function selectColor(player, color, el) {
+        if(player === 1) {
+            p1SelectedColor = color;
+            document.querySelectorAll('#p1-colors .color-dot').forEach(d => d.classList.remove('active'));
+        } else {
+            p2SelectedColor = color;
+            document.querySelectorAll('#p2-colors .color-dot').forEach(d => d.classList.remove('active'));
+        }
+        el.classList.add('active');
+    }
+
+    const allQuestions = [
+        {"question": "A plane is ... than a train.", "options": ["More fast", "Faster"], "answer": 1},
+        {"question": "Ted’s report is ... Tina’s report.", "options": ["Better than", "Gooder than"], "answer": 0},
+        {"question": "The Earth ... around the Sun.", "options": ["Revolves", "Revolve"], "answer": 0},
+        {"question": "How ... they ... to work?", "options": ["Do / Gets", "Do / Get"], "answer": 1},
+        {"question": "I went to İstanbul...", "options": ["Yesterday", "Tomorrow"], "answer": 0},
+        {"question": "It ... very hot today but yesterday it ... very cold.", "options": ["Is / Is", "Is / Was"], "answer": 1},
+        {"question": "It's a beautiful sunny day. ... go to the beach.", "options": ["Let's", "Shall"], "answer": 0},
+        {"question": "A: ... \nB: No, let's not. I don't like basketball.", "options": ["Do you like basketball?", "Shall we play basketball?"], "answer": 1},
+        {"question": "I prefer Golf ... swimming.", "options": ["To", "Rather than"], "answer": 0},
+        {"question": "Although I love relaxing on beaches, I think I prefer ... in the mountain.", "options": ["Walk", "Walking"], "answer": 1},
+        {"question": "Jason is a selfish person. He never ...", "options": ["Changes his mind.", "Cares about other people."], "answer": 1},
+        {"question": "Individual", "options": ["Bireysel", "Takım"], "answer": 0},
+        {"question": "Çalışma arkadaşı", "options": ["Souvenirs", "Colleague"], "answer": 1},
+        {"question": "You shouldn't cut down the trees.", "options": ["True", "False"], "answer": 0},
+        {"question": "Soap opera", "options": ["Sohbet programı", "Pembe dizi"], "answer": 1},
+        {"question": "Jack does not ... because he is quite healthy and fit. He does exercises every day.", "options": ["Have a healthy life", "Need to go on a diet."], "answer": 1},
+        {"question": "What does Daphne look like?", "options": ["She has short blonde hair and brown eyes.", "She has short black hair and brown eyes."], "answer": 1, "image": "daphne.jpeg"},
+        {"question": "Sally is more ... than Sarah because she never changes her ideas.", "options": ["Stubborn", "Dishonest"], "answer": 0},
+        {"question": "Spectators were very sad at the end of the match because their team ...", "options": ["Scored the best goal.", "Lost the championship cup."], "answer": 1},
+        {"question": "A: What are ... for?\nB: They are for playing tennis.", "options": ["Bat and ball", "Rackets and ball"], "answer": 1},
+        {"question": "Wesley ... more often than the other activities.", "options": ["Goes running", "Goes swimming"], "answer": 0, "image": "uhud.jpeg"},
+        {"question": "Five months ago, My grandfather ... from the company. After that, they ... to the country.", "options": ["Worked / Had a career", "Retired / Moved to"], "answer": 1},
+        {"question": "Professor Barclay didn't pay university feesÇünkü ...", "options": ["He got a PhD degree.", "He received a scholarship."], "answer": 1},
+        {"question": "Which of the following does NOT have an answer in the table?", "options": ["What did she discover?", "When did she die?"], "answer": 1, "image": "24.jpeg"},
+        {"question": "Derek is fond of wildlife, so he never ...", "options": ["Protects their habitat.", "Misses documentaries."], "answer": 1},
+        {"question": "According to the info, which animal is it? (Sharp teeth, lives in rivers)", "options": ["A crocodile", "An eagle"], "answer": 0, "image": "26.jpeg"},
+        {"question": "What does 'endangered' mean?", "options": ["Precautions for animals.", "Animals at risk of extinction."], "answer": 1},
+        {"question": "How long did Simon watch TV last night?", "options": ["One and a half hour.", "Half an hour."], "answer": 0, "image": "28.jpeg"},
+        {"question": "There was a bank robbery. I think you ... to get information about recent events.", "options": ["Prefer action movies.", "Should watch the news."], "answer": 1},
+        {"question": "Terry ... watches documentaries.", "options": ["Sometimes", "Rarely"], "answer": 0, "image": "30.jpeg"},
+        {"question": "The last test was more difficult than this one. This test is ...", "options": ["less difficult.", "less difficult than."], "answer": 0},
+        {"question": "Everybody hates him. He thinks women are ... men.", "options": ["Less intelligent that", "Less intelligent than"], "answer": 1},
+        {"question": "... she ... the best candidate after the interviews?", "options": ["Does / Choose", "Does / Chooses"], "answer": 0},
+        {"question": "Why ... he ... his family?", "options": ["Doesn't / Visit", "Doesn't / Visits"], "answer": 0},
+        {"question": "Did Marie Curie ... the Nobel Prize? Yes, she ... twice!", "options": ["win / did / won", "won / did / won"], "answer": 0},
+        {"question": "Which sentence is grammatically INCORRECT?", "options": ["They didn't invent it.", "She become a writer."], "answer": 1},
+        {"question": "Even if it's cold, you ... forget to wear warm clothes.", "options": ["Shouldn't", "Should"], "answer": 0},
+        {"question": "To be successful, you ... plan your daily activities carefully.", "options": ["Shouldn't", "Should"], "answer": 1},
+        {"question": "I ... to buy domestic ... foreign products.", "options": ["Would rather / than", "Prefer / rather than"], "answer": 1},
+        {"question": "... be blind or be deaf?", "options": ["Would you prefer", "Would you rather"], "answer": 1},
+        {"question": "Which activity is suitable for all of them?", "options": ["Surfing the net", "Going to the cinema"], "answer": 1, "image": "41.jpeg"},
+        {"question": "Which of the following is NOT correct?", "options": ["Susan is younger than others.", "Peter is older than others."], "answer": 0, "image": "42.jpeg"},
+        {"question": "Which can they do together according to their preferences?", "options": ["Volleyball", "Basketball"], "answer": 1, "image": "43.jpeg"},
+        {"question": "Which is correct according to the graph?", "options": ["Old people do less exercise.", "Cinema is their favorite."], "answer": 0, "image": "44.jpeg"},
+        {"question": "Which of the following is correct?", "options": ["Beethoven studied with him.", "Mozart died at 45."], "answer": 0},
+        {"question": "Which of the following does NOT have an answer above?", "options": ["Inventor of mobile phone?", "Who invented the Internet?"], "answer": 1, "image": "46.jpeg"},
+        {"question": "In the extinction...", "options": ["Habitat damage is the biggest.", "Hunting is not the only reason."], "answer": 1, "image": "47.jpeg"},
+        {"question": "Which completes the conversation?", "options": ["When did they become extinct?", "Why are they extinct?"], "answer": 0},
+        {"question": "Who can watch the same kind of TV programme together?", "options": ["Emily-David", "Emily-Tom"], "answer": 1},
+        {"question": "Which of the following does Claire NOT watch?", "options": ["Quiz show", "Discussion"], "answer": 0}
+    ];
+
+    let gameQuestions = [];
+    let currentQ = 0;
+    let scores = { p1: 0, p2: 0 };
+    let p1Status = "thinking";
+    let p2Status = "thinking";
+    let startTime;
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'flex';
+        document.getElementById('p1-area').style.backgroundColor = p1SelectedColor;
+        document.getElementById('p2-area').style.backgroundColor = p2SelectedColor;
+        initGame();
+    }
+
+    function initGame() {
+        let shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+        gameQuestions = shuffled.slice(0, 10);
+        currentQ = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQ >= gameQuestions.length) {
+            showEndScreen();
+            return;
+        }
+        p1Status = "thinking"; p2Status = "thinking";
+        const data = gameQuestions[currentQ];
+        [1, 2].forEach(p => {
+            document.getElementById(`p${p}-content-box`).classList.remove("is-waiting");
+           let qHTML = `<div>${data.question}</div>`;
+
+if (data.image && data.image.trim() !== "") {
+    qHTML += `<img src="${data.image}" style="max-width:220px; margin-top:12px; border-radius:12px;">`;
+}
+
+document.getElementById(`p${p}-q`).innerHTML = qHTML;
+
+            document.getElementById(`p${p}-btn0`).innerText = data.options[0];
+            document.getElementById(`p${p}-btn1`).innerText = data.options[1];
+            document.getElementById(`p${p}-count`).innerText = `Soru: ${currentQ + 1} / 10`;
+        });
+        startTime = Date.now();
+    }
+
+    function handleAnswer(player, choice) {
+        const correctIdx = gameQuestions[currentQ].answer;
+        let timeTaken = (Date.now() - startTime) / 1000;
+        let speedBonus = Math.max(0, Math.floor(50 - (timeTaken * 10))); 
+
+        if (choice === correctIdx) {
+            if (player === 1) scores.p1 += (50 + speedBonus);
+            else scores.p2 += (50 + speedBonus);
+        } else {
+            if (player === 1) scores.p1 = Math.max(0, scores.p1 - 10);
+            else scores.p2 = Math.max(0, scores.p2 - 10);
+        }
+        updateUI();
+
+        if (player === 1) p1Status = "done";
+        else p2Status = "done";
+
+        document.getElementById(`p${player}-content-box`).classList.add("is-waiting");
+
+        if (p1Status === "done" && p2Status === "done") {
+            currentQ++;
+            setTimeout(loadQuestion, 800);
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('p1-score-val').innerText = scores.p1;
+        document.getElementById('p2-score-val').innerText = scores.p2;
+    }
+
+    function showEndScreen() {
+        document.getElementById('overlay').style.display = 'flex';
+        let winText = scores.p1 > scores.p2 ? "SOL KAZANDI! 🏆" : (scores.p2 > scores.p1 ? "SAĞ KAZANDI! 🏆" : "BERABERE! 🤝");
+        document.getElementById('winner-text').innerHTML = winText + "<br><span style='font-size:2rem'>" + scores.p1 + " - " + scores.p2 + "</span>";
+    }
+</script>
+</body>
+</html>
